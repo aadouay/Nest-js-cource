@@ -1,14 +1,15 @@
 import {
+    BadRequestException,
     Body,
     Controller, 
     Delete,
     Get,
     NotFoundException,
     Param,
+    ParseIntPipe,
     Post,
     Put,
 } from "@nestjs/common";
-import type { Request, Response } from 'express';
 import { CreateProductDto } from "./dtos/create-product.dto";
 import { UpdateProductDto } from "./dtos/update-product.dto";
 type ProductType = { id:number, title:string, price:number }
@@ -30,9 +31,10 @@ export class ProductsController {
 
     // GET:  ~/api/products/:id
     @Get(":id")
-    getSingleProducts(@Param("id") id: string) {
+    getSingleProducts(@Param("id", ParseIntPipe) id: number) {
+        // console.log(typeof id);
         const find_product = this.products.find(
-            (product) => product.id === parseInt(id)
+            (product) => product.id === id
         );
         if(!find_product) 
                 throw new NotFoundException('Product not found !');
@@ -53,27 +55,25 @@ export class ProductsController {
     // PUT : ~/api/products/:id
 
     @Put(":id")
-    updateProduct(@Param('id') id: string, @Body() Body: UpdateProductDto){
+    updateProduct(@Param('id', ParseIntPipe) id: number, @Body() Body: UpdateProductDto){
         // logic of update product based on the body json ...
-        let find_product = this.products.find((p => p.id === parseInt(id)));
+        let find_product = this.products.find((p => p.id === id));
         if(!find_product) throw new NotFoundException('Product not found !');
         if(Body.title)
             find_product.title = Body.title;
         if(Body.price)
             find_product.price = Body.price;
-        this.products[parseInt(id) - 1] = find_product;
+        this.products[id - 1] = find_product;
         return find_product;
     }
     
     // DELETE: ~/api/product/:id
     @Delete(":id")
-    deleteSingleProduct(@Param('id') id: string){
-        const find_product = this.products.find((p => p.id === parseInt(id)));
+    deleteSingleProduct(@Param('id', ParseIntPipe) id: number){
+        const find_product = this.products.find((p => p.id === id));
         if(!find_product) throw new NotFoundException('Product not found !');
 
-        this.products.splice(parseInt(id) - 1, 1);
+        this.products.splice(id - 1, 1);
         return find_product;
     }
-
-
 }
