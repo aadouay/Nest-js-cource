@@ -5,11 +5,13 @@ import {
   NotFoundException,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserInfo } from './dtos/Users-info.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Controller('api/users')
 export class UsersController {
@@ -38,4 +40,9 @@ export class UsersController {
   createUser(@Body() body: CreateUserDto) {
     return this.UsersService.createOne(body);
   }
+  @Patch(':id')
+  async UpdateUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdateUserDto,
+  ) {}
 }

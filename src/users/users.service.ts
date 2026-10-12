@@ -1,6 +1,7 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -48,4 +49,6 @@ export class UsersService {
     }
     throw new ConflictException('This email is already registered.');
   }
+  
+  async updateUser(id: number, body: UpdateUserDto) {}
 }
