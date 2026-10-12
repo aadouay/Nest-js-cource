@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  ConflictException,
-  BadRequestException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 
@@ -38,7 +33,8 @@ export class UsersService {
   }
 
   async createOne(body: CreateUserDto) {
-    try {
+    const check_user = await this.findByEmail(body.email);
+    if (!check_user) {
       const user = await this.prismaService.users.create({
         data: {
           first_name: body.firstname,
@@ -49,13 +45,7 @@ export class UsersService {
         },
       });
       return user;
-    } catch (error) {
-      if (error === 'P2002')
-        throw new ConflictException('This email is already registered.');
-      else if (error === 'P2011')
-        throw new BadRequestException('You missed a field that is required. !');
-      else if (error === 'P2000') throw new BadRequestException();
-      else throw new InternalServerErrorException('Could not create user.');
     }
+    throw new ConflictException('This email is already registered.');
   }
 }
