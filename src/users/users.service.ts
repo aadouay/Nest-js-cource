@@ -1,7 +1,12 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { BoundSocket } from 'node:net';
 
 @Injectable()
 export class UsersService {
@@ -9,13 +14,28 @@ export class UsersService {
 
   // Get all users
   async getAll() {
-    return await this.prismaService.users.findMany();
+    return await this.prismaService.users.findMany({
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true,
+      },
+    });
   }
 
   async findById(id: number) {
     const check_user = await this.prismaService.users.findUnique({
       where: {
         id: id,
+      },
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true,
       },
     });
 
@@ -27,6 +47,13 @@ export class UsersService {
     const check_user = await this.prismaService.users.findUnique({
       where: {
         email: body,
+      },
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true,
       },
     });
     if (!check_user) return null;
@@ -44,11 +71,34 @@ export class UsersService {
           phone: body.phone,
           password: body.password,
         },
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+          phone: true,
+        },
       });
       return user;
     }
     throw new ConflictException('This email is already registered.');
   }
-  
-  async updateUser(id: number, body: UpdateUserDto) {}
+
+  async updateUser(id: number, body: UpdateUserDto) {
+    const check_user = await this.findById(id);
+    if (!check_user) throw new NotFoundException('User Not Found!');
+    const update = await this.prismaService.users.update({
+      where: { id },
+      data: body,
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true,
+        // bio: true,
+      },
+    });
+    return update;
+  }
 }

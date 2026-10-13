@@ -44,5 +44,7 @@ export class UsersController {
   async UpdateUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateUserDto,
-  ) {}
+  ) {
+    return await this.UsersService.updateUser(id, body);
+  }
 }
