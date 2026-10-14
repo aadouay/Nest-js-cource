@@ -6,7 +6,7 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { BoundSocket } from 'node:net';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -63,13 +63,14 @@ export class UsersService {
   async createOne(body: CreateUserDto) {
     const check_user = await this.findByEmail(body.email);
     if (!check_user) {
+      const pass_hashed = bcrypt.hash(body.password, 10);
       const user = await this.prismaService.users.create({
         data: {
           first_name: body.firstname,
           last_name: body.lastname,
           email: body.email,
           phone: body.phone,
-          password: body.password,
+          password: pass_hashed,
         },
         select: {
           id: true,
