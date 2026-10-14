@@ -63,7 +63,7 @@ export class UsersService {
   async createOne(body: CreateUserDto) {
     const check_user = await this.findByEmail(body.email);
     if (!check_user) {
-      const pass_hashed = bcrypt.hash(body.password, 10);
+      const pass_hashed = await bcrypt.hash(body.password, 10);
       const user = await this.prismaService.users.create({
         data: {
           first_name: body.firstname,
@@ -90,14 +90,17 @@ export class UsersService {
     if (!check_user) throw new NotFoundException('User Not Found!');
     const update = await this.prismaService.users.update({
       where: { id },
-      data: body,
+      data: {
+        first_name: body.first_name,
+        last_name: body.last_name,
+        phone: body.phone,
+      },
       select: {
         id: true,
         first_name: true,
         last_name: true,
         email: true,
         phone: true,
-        // bio: true,
       },
     });
     return update;
