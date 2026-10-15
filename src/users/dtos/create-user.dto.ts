@@ -4,25 +4,25 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(50)
-  firstname: string;
+  firstname!: string;
 
   @IsNotEmpty()
   @IsString()
   @MaxLength(50)
-  lastname: string;
+  lastname!: string;
 
   @IsNotEmpty()
   @IsString()
   @MaxLength(255)
-  email: string;
+  email!: string;
 
   @IsNotEmpty()
   @IsString()
-  @maxLength(20)
-  phone: string;
+  @MaxLength(20)
+  phone!: string;
 
   @IsNotEmpty()
   @IsString()
-  @maxLength(100)
-  password: string;
+  @MaxLength(100)
+  password!: string;
 }

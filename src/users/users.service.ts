@@ -7,6 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 
 @Injectable()
 export class UsersService {
@@ -43,10 +44,37 @@ export class UsersService {
     return check_user;
   }
 
-  async findByEmail(body: string) {
+  async findByEmailForAuth(email: string) {
     const check_user = await this.prismaService.users.findUnique({
       where: {
-        email: body,
+        email: email,
+      },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      },
+    });
+    return check_user;
+  }
+
+  async createOne(body: CreateUserDto) {
+    const check_user = await this.prismaService.users.findUnique({
+      where: {
+        email: body.email,
+      },
+    });
+    if (check_user) {
+      throw new ConflictException('This email is already registered.');
+    }
+    const pass_hashed = await bcrypt.hash(body.password, 10);
+    const user = await this.prismaService.users.create({
+      data: {
+        first_name: body.firstname,
+        last_name: body.lastname,
+        email: body.email,
+        phone: body.phone,
+        password: pass_hashed,
       },
       select: {
         id: true,
@@ -56,33 +84,7 @@ export class UsersService {
         phone: true,
       },
     });
-    if (!check_user) return null;
-    return check_user;
-  }
-
-  async createOne(body: CreateUserDto) {
-    const check_user = await this.findByEmail(body.email);
-    if (!check_user) {
-      const pass_hashed = await bcrypt.hash(body.password, 10);
-      const user = await this.prismaService.users.create({
-        data: {
-          first_name: body.firstname,
-          last_name: body.lastname,
-          email: body.email,
-          phone: body.phone,
-          password: pass_hashed,
-        },
-        select: {
-          id: true,
-          first_name: true,
-          last_name: true,
-          email: true,
-          phone: true,
-        },
-      });
-      return user;
-    }
-    throw new ConflictException('This email is already registered.');
+    return user;
   }
 
   async updateUser(id: number, body: UpdateUserDto) {
@@ -104,5 +106,24 @@ export class UsersService {
       },
     });
     return update;
+  }
+
+  async deleteone(id: number) {
+    try {
+      await this.prismaService.users.delete({
+        where: {
+          id: id,
+        },
+      });
+      return { message: 'User deleted successfully' };
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code == 'P2025'
+      ) {
+        throw new NotFoundException('User not found');
+      }
+      throw error;
+    }
   }
 }
