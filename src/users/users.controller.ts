@@ -31,6 +31,7 @@ export class UsersController {
 
   @Post()
   createUser(@Body() body: CreateUserDto) {
+    console.log('Received body:', body);
     return this.usersService.createOne(body);
   }
   @Patch(':id')
