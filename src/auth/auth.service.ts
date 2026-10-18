@@ -32,7 +32,10 @@ export class AuthService {
       email: user.email,
     };
 
-    return this.jwtservice.signAsync(playlod);
+    const accessToken = await this.jwtservice.signAsync(playlod);
+    return {
+      access_token: accessToken,
+    };
   }
 
   //leter
