@@ -2,10 +2,14 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CheckInputValidation } from './dtos/login.dto';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userService: UsersService) {}
+  constructor(
+    private readonly userService: UsersService,
+    private readonly jwtservice: JwtService,
+  ) {}
 
   async logInValidation(input: CheckInputValidation) {
     const user = await this.userService.findByEmailForAuth(input.email);
@@ -23,9 +27,14 @@ export class AuthService {
   async logIn(input: CheckInputValidation) {
     const user = await this.logInValidation(input);
 
-    // learning JWT for creat a token that containe the inof of user ...
+    const playlod = {
+      id: user.id,
+      email: user.email,
+    };
+
+    return this.jwtservice.signAsync(playlod);
   }
 
   //leter
-  //   async registerUser(input) {}
+  // async registerUser(input) {}
 }
